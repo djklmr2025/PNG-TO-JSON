@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>PNG → Vector JSON | Flow Diagram Creator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;800&display=swap');
+
+  :root {
+    --bg:      #080e1c;
+    --surface: #0d1a30;
+    --card:    #101f38;
+    --border:  #1c3257;
+    --accent:  #22d3ee;
+    --accent2: #6366f1;
+    --green:   #34d399;
+    --red:     #f87171;
+    --text:    #e2e8f0;
+    --muted:   #64748b;
+    --mono:    'JetBrains Mono', monospace;
+    --sans:    'Syne', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Noise overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0;
+  }
+
+  header {
+    position: relative; z-index: 1;
+    padding: 20px 28px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 14px;
+    background: linear-gradient(135deg, #0d1a30 0%, #060d1a 100%);
+  }
+
+  .logo {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+    box-shadow: 0 0 20px rgba(34,211,238,0.25);
+  }
+
+  header h1 {
+    font-size: 18px; font-weight: 800;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: -0.3px;
+  }
+  header p { font-size: 11px; color: var(--muted); margin-top: 1px; font-family: var(--mono); }
+
+  .badge {
+    margin-left: auto;
+    background: rgba(34,211,238,0.1);
+    border: 1px solid rgba(34,211,238,0.25);
+    color: var(--accent);
+    font-size: 10px; font-family: var(--mono); font-weight: 600;
+    padding: 3px 8px; border-radius: 20px;
+  }
+
+  /* MAIN LAYOUT */
+  .layout {
+    position: relative; z-index: 1;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 0;
+    min-height: calc(100vh - 73px);
+  }
+
+  /* LEFT PANEL */
+  .panel-left {
+    grid-row: 1 / 3;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 18px;
+    display: flex; flex-direction: column; gap: 16px;
+    overflow-y: auto;
+  }
+
+  .section-title {
+    font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--accent);
+    font-family: var(--mono);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+  }
+
+  /* DROP ZONE */
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 28px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .drop-zone:hover, .drop-zone.dragging {
+    border-color: var(--accent);
+    background: rgba(34,211,238,0.04);
+  }
+  .drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .drop-zone .icon { font-size: 32px; margin-bottom: 8px; display: block; }
+  .drop-zone p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .drop-zone strong { color: var(--accent); }
+
+  #previewThumb {
+    width: 100%; border-radius: 8px;
+    background: #06111f;
+    border: 1px solid var(--border);
+    display: none;
+    max-height: 140px; object-fit: contain;
+  }
+
+  /* SLIDERS */
+  .control { margin-bottom: 12px; }
+  .control label {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--text); margin-bottom: 6px;
+  }
+  .control label span { font-family: var(--mono); color: var(--accent); font-size: 11px; }
+
+  input[type=range] {
+    width: 100%; height: 4px;
+    -webkit-appearance: none;
+    background: var(--border); border-radius: 2px; outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 0 6px rgba(34,211,238,0.5);
+  }
+
+  select {
+    width: 100%;
+    background: var(--card); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 10px; font-size: 12px;
+    outline: none; cursor: pointer;
+    font-family: var(--sans);
+  }
+  select:focus { border-color: var(--accent); }
+
+  /* BUTTONS */
+  .btn {
+    width: 100%; padding: 11px;
+    border: none; border-radius: 10px;
+    font-family: var(--sans); font-weight: 600; font-size: 13px;
+    cursor: pointer; transition: all .2s;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    letter-spacing: 0.2px;
+  }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(34,211,238,0.2);
+  }
+  .btn-primary:hover:not(:disabled) {
+    box-shadow: 0 6px 20px rgba(34,211,238,0.35);
+    transform: translateY(-1px);
+  }
+  .btn-secondary {
+    background: var(--card); color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+
+  .btn-green {
+    background: linear-gradient(135deg, #059669, #10b981);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(52,211,153,0.15);
+  }
+  .btn-green:hover:not(:disabled) {
+    box-shadow: 0 6px 20px rgba(52,211,153,0.3);
+    transform: translateY(-1px);
+  }
+
+  .btn-sm {
+    width: auto; padding: 7px 14px; font-size: 11px;
+    border-radius: 7px;
+  }
+
+  /* publish key */
+  .key-input {
+    display: flex; gap: 6px; align-items: center;
+  }
+  .key-input input {
+    flex: 1; background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text);
+    padding: 8px 10px; font-size: 11px; font-family: var(--mono);
+    outline: none;
+  }
+  .key-input input:focus { border-color: var(--accent); }
+
+  /* info box */
+  .info-box {
+    background: rgba(99,102,241,0.08);
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 11px;
+    color: #a5b4fc;
+    line-height: 1.6;
+    font-family: var(--mono);
+  }
+
+  /* RIGHT: PREVIEW */
+  .panel-preview {
+    background: var(--bg);
+    padding: 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .panel-preview .top-row {
+    display: flex; align-items: center; gap: 10px;
+    flex-wrap: wrap;
+  }
+  .panel-preview h2 { font-size: 13px; font-weight: 600; color: var(--muted); flex: 1; }
+
+  .canvas-wrap {
+    background: #060d19;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 260px; position: relative;
+  }
+  #vectorCanvas {
+    max-width: 100%; max-height: 280px;
+    display: block;
+  }
+  .canvas-placeholder {
+    color: var(--muted); font-size: 12px; font-family: var(--mono);
+    text-align: center; padding: 40px;
+    display: flex; flex-direction: column; gap: 10px; align-items: center;
+  }
+  .canvas-placeholder span { font-size: 40px; }
+
+  /* stats bar */
+  .stats {
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 12px;
+    font-family: var(--mono);
+  }
+  .stat .val { font-size: 18px; font-weight: 600; color: var(--accent); }
+  .stat .lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; }
+
+  /* RIGHT: JSON */
+  .panel-json {
+    padding: 18px;
+    display: flex; flex-direction: column; gap: 12px;
+    overflow: hidden;
+  }
+  .panel-json .top-row {
+    display: flex; align-items: center; gap: 10px;
+    flex-wrap: wrap;
+  }
+  .panel-json h2 { font-size: 13px; font-weight: 600; color: var(--muted); flex: 1; }
+
+  #jsonOut {
+    font-family: var(--mono); font-size: 10.5px;
+    background: #050c18; color: #a8d5f7;
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px; width: 100%;
+    height: 220px; resize: vertical;
+    outline: none; line-height: 1.6;
+  }
+  #jsonOut:focus { border-color: var(--accent); }
+
+  /* STATUS */
+  .status {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px; font-family: var(--mono);
+    display: none; align-items: center; gap: 8px;
+  }
+  .status.ok  { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.2); color: var(--green); display: flex; }
+  .status.err { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.2); color: var(--red); display: flex; }
+  .status.inf { background: rgba(34,211,238,0.08); border: 1px solid rgba(34,211,238,0.15); color: var(--accent); display: flex; }
+
+  /* LOADING SPINNER */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(34,211,238,0.2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+
+  /* PULSE ANIMATION on vectorize */
+  @keyframes pulse-accent {
+    0%, 100% { box-shadow: 0 4px 15px rgba(34,211,238,0.2); }
+    50%       { box-shadow: 0 4px 25px rgba(34,211,238,0.5); }
+  }
+  .pulsing { animation: pulse-accent 1s ease-in-out infinite; }
+
+  /* Result links */
+  .result-links {
+    display: none; flex-direction: column; gap: 6px;
+    background: rgba(52,211,153,0.06);
+    border: 1px solid rgba(52,211,153,0.2);
+    border-radius: 10px; padding: 12px;
+  }
+  .result-links.visible { display: flex; }
+  .result-links p { font-size: 10px; color: var(--green); font-family: var(--mono); font-weight: 600; margin-bottom: 4px; }
+  .result-links a {
+    font-size: 11px; color: var(--accent); font-family: var(--mono);
+    word-break: break-all; text-decoration: none;
+    display: block; padding: 4px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .result-links a:last-child { border: none; }
+  .result-links a:hover { text-decoration: underline; }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; grid-template-rows: auto; }
+    .panel-left { grid-row: auto; border-right: none; border-bottom: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🔷</div>
+  <div>
+    <h1>PNG → Vector JSON</h1>
+    <p>flow-diagram-creator / Agrupados converter</p>
+  </div>
+  <span class="badge">v1.4.0-r1</span>
+</header>
+
+<div class="layout">
+
+  <!-- LEFT PANEL: CONTROLS -->
+  <div class="panel-left">
+
+    <div>
+      <div class="section-title">1 — Imagen PNG</div>
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp"/>
+        <span class="icon">🖼️</span>
+        <p>Arrastra tu <strong>PNG</strong> aquí<br/>o haz clic para seleccionar</p>
+      </div>
+      <img id="previewThumb" alt="preview"/>
+    </div>
+
+    <div>
+      <div class="section-title">2 — Calidad de vectorización</div>
+
+      <div class="control">
+        <label>Colores <span id="colorsVal">10</span></label>
+        <input type="range" id="colors" min="2" max="32" value="10"/>
+      </div>
+      <div class="control">
+        <label>Suavizado (omit) <span id="omitVal">10</span></label>
+        <input type="range" id="omit" min="0" max="40" value="10"/>
+      </div>
+      <div class="control">
+        <label>Detalle (ltres) <span id="ltresVal">1.0</span></label>
+        <input type="range" id="ltres" min="1" max="20" value="10" step="1"/>
+      </div>
+      <div class="control">
+        <label>Escala de salida <span id="scaleVal">1.0×</span></label>
+        <input type="range" id="scale" min="5" max="30" value="10"/>
+      </div>
+
+      <div class="control" style="margin-top:8px">
+        <label style="margin-bottom:6px">Tipo de elemento JSON</label>
+        <select id="elemType">
+          <option value="polygon">polygon  — recomendado (nativo del engine)</option>
+          <option value="path">path  — SVG path data (si tu engine lo soporta)</option>
+        </select>
+      </div>
+
+      <div class="info-box" id="typeHint">
+        ✅ <b>polygon</b>: sampleamos los paths SVG como puntos.
+        Compatible directo con tu engine de Agrupados.
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title">3 — Nombre y carpeta</div>
+      <div class="control">
+        <label>Nombre del sticker</label>
+        <input type="text" id="stickerName" value="mi-vector"
+          style="width:100%; background:var(--card); border:1px solid var(--border);
+                 border-radius:8px; color:var(--text); padding:8px 10px;
+                 font-size:12px; font-family:var(--mono); outline:none;"/>
+      </div>
+      <div class="control">
+        <label>Carpeta (opcional)</label>
+        <input type="text" id="folderName" placeholder="ej. tren/linea-1"
+          style="width:100%; background:var(--card); border:1px solid var(--border);
+                 border-radius:8px; color:var(--text); padding:8px 10px;
+                 font-size:12px; font-family:var(--mono); outline:none;"/>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title">4 — Publicar directo</div>
+      <div class="control">
+        <label>URL del sistema</label>
+        <input type="text" id="systemUrl" value="https://flow-diagram-creator.vercel.app"
+          style="width:100%; background:var(--card); border:1px solid var(--border);
+                 border-radius:8px; color:var(--text); padding:8px 10px;
+                 font-size:12px; font-family:var(--mono); outline:none;"/>
+      </div>
+      <div class="control">
+        <label>Publish Key</label>
+        <div class="key-input">
+          <input type="password" id="publishKey" placeholder="arkaios-flow-secret-2026"/>
+          <button class="btn btn-secondary btn-sm" id="toggleKey">👁</button>
+        </div>
+      </div>
+      <div class="result-links" id="resultLinks">
+        <p>✅ PUBLICADO EXITOSAMENTE</p>
+      </div>
+    </div>
+
+  </div><!-- /panel-left -->
+
+  <!-- RIGHT: PREVIEW -->
+  <div class="panel-preview">
+    <div class="top-row">
+      <h2>Vista previa vectorizada</h2>
+      <button class="btn btn-primary" id="btnVectorize" disabled>
+        ⚡ Vectorizar
+      </button>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <div class="canvas-wrap">
+      <div class="canvas-placeholder" id="placeholder">
+        <span>🔷</span>
+        <div>Carga un PNG y haz clic en <b>Vectorizar</b></div>
+      </div>
+      <canvas id="vectorCanvas" style="display:none;"></canvas>
+    </div>
+
+    <div class="stats" id="stats" style="display:none">
+      <div class="stat"><div class="val" id="statShapes">0</div><div class="lbl">Shapes</div></div>
+      <div class="stat"><div class="val" id="statPoints">0</div><div class="lbl">Puntos</div></div>
+      <div class="stat"><div class="val" id="statColors">0</div><div class="lbl">Colores</div></div>
+      <div class="stat"><div class="val" id="statKB">0</div><div class="lbl">JSON KB</div></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: JSON OUTPUT -->
+  <div class="panel-json">
+    <div class="top-row">
+      <h2>JSON de salida</h2>
+      <button class="btn btn-secondary btn-sm" id="btnCopy" disabled>📋 Copiar</button>
+      <button class="btn btn-secondary btn-sm" id="btnDownload" disabled>⬇ Descargar</button>
+      <button class="btn btn-green btn-sm" id="btnPublish" disabled>🚀 Publicar Agrupado</button>
+    </div>
+
+    <textarea id="jsonOut" placeholder="Aquí aparece el JSON compatible con tu sistema...
+Formato: { name, camera, elements: [polygon/path...] }
+
+✅ Este JSON puede importarse directamente desde el editor.
+📦 O publicarse como Agrupado sin error de imagen."></textarea>
+
+    <div id="publishStatus" class="status"></div>
+  </div>
+
+</div><!-- /layout -->
+
+<!-- ImageTracer -->
+<script src="https://unpkg.com/imagetracerjs@1.2.6/imagetracer_v1.2.6.js"></script>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let imgDataUrl = null;
+let lastJson = null;
+let lastSvgDoc = null;
+
+// ─── ELEMENTS ────────────────────────────────────────────────────────────────
+const fileInput    = document.getElementById('fileInput');
+const dropZone     = document.getElementById('dropZone');
+const previewThumb = document.getElementById('previewThumb');
+const btnVectorize = document.getElementById('btnVectorize');
+const btnCopy      = document.getElementById('btnCopy');
+const btnDownload  = document.getElementById('btnDownload');
+const btnPublish   = document.getElementById('btnPublish');
+const jsonOut      = document.getElementById('jsonOut');
+const statusEl     = document.getElementById('status');
+const publishStatusEl = document.getElementById('publishStatus');
+const vectorCanvas = document.getElementById('vectorCanvas');
+const placeholder  = document.getElementById('placeholder');
+const stats        = document.getElementById('stats');
+const resultLinks  = document.getElementById('resultLinks');
+const toggleKey    = document.getElementById('toggleKey');
+const publishKeyEl = document.getElementById('publishKey');
+
+const sliders = {
+  colors: { el: document.getElementById('colors'), disp: document.getElementById('colorsVal'), fmt: v => v },
+  omit:   { el: document.getElementById('omit'),   disp: document.getElementById('omitVal'),   fmt: v => v },
+  ltres:  { el: document.getElementById('ltres'),  disp: document.getElementById('ltresVal'),  fmt: v => (v/10).toFixed(1) },
+  scale:  { el: document.getElementById('scale'),  disp: document.getElementById('scaleVal'),  fmt: v => (v/10).toFixed(1)+'×' },
+};
+Object.values(sliders).forEach(s => {
+  s.el.addEventListener('input', () => s.disp.textContent = s.fmt(+s.el.value));
+});
+
+const elemType = document.getElementById('elemType');
+const typeHint = document.getElementById('typeHint');
+elemType.addEventListener('change', () => {
+  if (elemType.value === 'polygon') {
+    typeHint.innerHTML = '✅ <b>polygon</b>: sampleamos los paths SVG como puntos.<br/>Compatible directo con tu engine de Agrupados.';
+  } else {
+    typeHint.innerHTML = '⚠️ <b>path</b>: usa SVG path data (d="M..."). Funciona si tu engine renderiza paths SVG nativos.';
+  }
+});
+
+toggleKey.addEventListener('click', () => {
+  publishKeyEl.type = publishKeyEl.type === 'password' ? 'text' : 'password';
+  toggleKey.textContent = publishKeyEl.type === 'password' ? '👁' : '🙈';
+});
+
+// ─── DRAG & DROP ─────────────────────────────────────────────────────────────
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragging'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragging'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('dragging');
+  const file = e.dataTransfer.files[0];
+  if (file) loadFile(file);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) loadFile(e.target.files[0]);
+});
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    imgDataUrl = ev.target.result;
+    previewThumb.src = imgDataUrl;
+    previewThumb.style.display = 'block';
+    dropZone.querySelector('p').textContent = '✅ ' + file.name;
+    // Auto-set name from filename
+    const base = file.name.replace(/\.[^.]+$/, '').replace(/\s+/g,'-').toLowerCase();
+    document.getElementById('stickerName').value = base || 'mi-vector';
+    btnVectorize.disabled = false;
+    setStatus('info', `Imagen cargada: ${file.name} (${(file.size/1024).toFixed(1)} KB)`);
+    // Clear previous results
+    lastJson = null; lastSvgDoc = null;
+    jsonOut.value = '';
+    vectorCanvas.style.display = 'none';
+    placeholder.style.display = 'flex';
+    stats.style.display = 'none';
+    btnCopy.disabled = true; btnDownload.disabled = true; btnPublish.disabled = true;
+    resultLinks.classList.remove('visible');
+  };
+  reader.readAsDataURL(file);
+}
+
+// ─── VECTORIZE ────────────────────────────────────────────────────────────────
+btnVectorize.addEventListener('click', () => vectorize());
+
+async function vectorize() {
+  if (!imgDataUrl) return;
+
+  btnVectorize.disabled = true;
+  btnVectorize.classList.add('pulsing');
+  setStatus('info', 'Vectorizando...');
+  placeholder.style.display = 'none';
+  vectorCanvas.style.display = 'none';
+  stats.style.display = 'none';
+
+  // Small delay so the UI updates before blocking
+  await new Promise(r => setTimeout(r, 80));
+
+  try {
+    const numColors = +sliders.colors.el.value;
+    const pathomit  = +sliders.omit.el.value;
+    const ltres     = +sliders.ltres.el.value / 10;
+    const scale     = +sliders.scale.el.value / 10;
+
+    const opts = {
+      numberofcolors: numColors,
+      pathomit: pathomit,
+      ltres: ltres,
+      qtres: 1,
+      scale: scale,
+      viewbox: true,
+      roundcoords: 1,
+      desc: false,
+    };
+
+    // Run ImageTracer
+    const svgStr = await new Promise((res, rej) => {
+      try {
+        const result = ImageTracer.imageToSVG(imgDataUrl, opts);
+        res(result);
+      } catch(e) { rej(e); }
+    });
+
+    // Parse SVG
+    const parser = new DOMParser();
+    lastSvgDoc = parser.parseFromString(svgStr, 'image/svg+xml');
+
+    // Render preview on canvas
+    renderSvgToCanvas(svgStr);
+
+    // Build JSON
+    const eType = elemType.value;
+    const json = buildJson(lastSvgDoc, eType, scale);
+    lastJson = json;
+
+    const jsonStr = JSON.stringify(json, null, 2);
+    jsonOut.value = jsonStr;
+
+    // Stats
+    const totalPoints = json.elements.reduce((acc, el) => {
+      if (el.type === 'polygon') return acc + (el.points?.length || 0);
+      return acc + (el.d?.length > 0 ? 1 : 0);
+    }, 0);
+    const colors = new Set(json.elements.map(e => e.fillColor || e.color)).size;
+    document.getElementById('statShapes').textContent = json.elements.length;
+    document.getElementById('statPoints').textContent = totalPoints;
+    document.getElementById('statColors').textContent = colors;
+    document.getElementById('statKB').textContent = (new Blob([jsonStr]).size / 1024).toFixed(1);
+    stats.style.display = 'flex';
+
+    setStatus('ok', `✅ Vectorización completa: ${json.elements.length} shapes, ${(new Blob([jsonStr]).size/1024).toFixed(1)} KB JSON`);
+
+    btnCopy.disabled = false;
+    btnDownload.disabled = false;
+    btnPublish.disabled = false;
+
+  } catch(err) {
+    setStatus('error', '❌ Error: ' + err.message);
+    placeholder.style.display = 'flex';
+    console.error(err);
+  }
+
+  btnVectorize.disabled = false;
+  btnVectorize.classList.remove('pulsing');
+}
+
+// ─── RENDER PREVIEW ──────────────────────────────────────────────────────────
+function renderSvgToCanvas(svgStr) {
+  const blob = new Blob([svgStr], {type: 'image/svg+xml'});
+  const url  = URL.createObjectURL(blob);
+  const img  = new Image();
+  img.onload = () => {
+    const maxW = vectorCanvas.parentElement.clientWidth - 32;
+    const maxH = 280;
+    let w = img.naturalWidth, h = img.naturalHeight;
+    if (w > maxW) { h = h * maxW / w; w = maxW; }
+    if (h > maxH) { w = w * maxH / h; h = maxH; }
+    vectorCanvas.width  = Math.round(w);
+    vectorCanvas.height = Math.round(h);
+    const ctx = vectorCanvas.getContext('2d');
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+    vectorCanvas.style.display = 'block';
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
+}
+
+// ─── BUILD JSON ──────────────────────────────────────────────────────────────
+function buildJson(svgDoc, elemType, scale) {
+  const name   = document.getElementById('stickerName').value.trim() || 'mi-vector';
+  const folder = document.getElementById('folderName').value.trim() || '';
+
+  const svgEl = svgDoc.querySelector('svg');
+  const vb = svgEl?.getAttribute('viewBox')?.split(/[\s,]+/).map(Number) || [0,0,400,400];
+  const svgW = vb[2] || 400;
+  const svgH = vb[3] || 400;
+
+  const paths = [...svgDoc.querySelectorAll('path')];
+
+  let elements;
+  if (elemType === 'path') {
+    elements = paths.map((p, i) => buildPathElement(p, i)).filter(Boolean);
+  } else {
+    elements = paths.map((p, i) => buildPolygonElement(p, i, svgEl)).filter(Boolean);
+  }
+
+  const json = {
+    name,
+    camera: { x: 0, y: 0, zoom: 1 },
+    elements,
+  };
+  if (folder) json.folder = folder;
+
+  return json;
+}
+
+// ─── PATH ELEMENT ─────────────────────────────────────────────────────────────
+function buildPathElement(pathEl, idx) {
+  const d = pathEl.getAttribute('d');
+  if (!d || d.length < 4) return null;
+
+  const fill   = parseColor(pathEl.getAttribute('fill'));
+  const stroke = pathEl.getAttribute('stroke');
+  const sw     = parseFloat(pathEl.getAttribute('stroke-width') || '1');
+  const opacity = parseFloat(pathEl.getAttribute('opacity') || '1');
+
+  return {
+    type: 'path',
+    id: `path_${idx}`,
+    name: `path_${idx}`,
+    d,
+    fillColor: fill || '#000000',
+    strokeColor: stroke && stroke !== 'none' ? parseColor(stroke) : 'transparent',
+    lineWidth: sw || 1,
+    opacity: isNaN(opacity) ? 1 : opacity,
+    x: 0, y: 0,
+  };
+}
+
+// ─── POLYGON ELEMENT ─────────────────────────────────────────────────────────
+function buildPolygonElement(pathEl, idx, svgEl) {
+  const d = pathEl.getAttribute('d');
+  if (!d || d.length < 4) return null;
+
+  const fill    = parseColor(pathEl.getAttribute('fill'));
+  const stroke  = pathEl.getAttribute('stroke');
+  const sw      = parseFloat(pathEl.getAttribute('stroke-width') || '1');
+  const opacity = parseFloat(pathEl.getAttribute('opacity') || '1');
+
+  // Sample the path as polygon points
+  const points = samplePath(pathEl, svgEl, 80);
+  if (!points || points.length < 3) return null;
+
+  // Centroid as element position
+  const cx = points.reduce((s,p) => s+p[0], 0) / points.length;
+  const cy = points.reduce((s,p) => s+p[1], 0) / points.length;
+  const relPoints = points.map(p => [
+    Math.round((p[0] - cx) * 10) / 10,
+    Math.round((p[1] - cy) * 10) / 10
+  ]);
+
+  return {
+    type: 'polygon',
+    id: `poly_${idx}`,
+    name: `shape_${idx}`,
+    x: Math.round(cx),
+    y: Math.round(cy),
+    points: relPoints,
+    fillColor: fill || '#000000',
+    strokeColor: stroke && stroke !== 'none' ? parseColor(stroke) : 'transparent',
+    lineWidth: sw || 1,
+    opacity: isNaN(opacity) ? 1 : opacity,
+  };
+}
+
+// Sample SVG path to array of [x, y] points
+let _samplingNS = null;
+function samplePath(pathEl, svgEl, maxPoints) {
+  try {
+    // We need the path in a live SVG document to use getTotalLength / getPointAtLength
+    if (!_samplingNS) {
+      _samplingNS = document.createElementNS('http://www.w3.org/2000/svg','svg');
+      _samplingNS.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;';
+      document.body.appendChild(_samplingNS);
+    }
+
+    const clone = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    clone.setAttribute('d', pathEl.getAttribute('d'));
+    _samplingNS.appendChild(clone);
+
+    const len = clone.getTotalLength();
+    if (len < 1) { _samplingNS.removeChild(clone); return null; }
+
+    // Adaptive step: more points for longer paths
+    const n = Math.min(maxPoints, Math.max(8, Math.ceil(len / 4)));
+    const pts = [];
+    for (let i = 0; i <= n; i++) {
+      const pt = clone.getPointAtLength((i / n) * len);
+      pts.push([Math.round(pt.x * 10) / 10, Math.round(pt.y * 10) / 10]);
+    }
+
+    _samplingNS.removeChild(clone);
+
+    // Remove duplicate consecutive points
+    const clean = [pts[0]];
+    for (let i = 1; i < pts.length; i++) {
+      if (pts[i][0] !== clean[clean.length-1][0] || pts[i][1] !== clean[clean.length-1][1]) {
+        clean.push(pts[i]);
+      }
+    }
+    return clean;
+  } catch(e) {
+    // Fallback: parse d attribute manually (basic M/L/Z)
+    return parseDSimple(pathEl.getAttribute('d') || '');
+  }
+}
+
+// Ultra-simple fallback: extract M/L coords
+function parseDSimple(d) {
+  const pts = [];
+  const re = /[ML]\s*([\d.+-]+)[,\s]+([\d.+-]+)/g;
+  let m;
+  while ((m = re.exec(d)) !== null) {
+    pts.push([parseFloat(m[1]), parseFloat(m[2])]);
+  }
+  return pts.length >= 3 ? pts : null;
+}
+
+// ─── COLOR UTILS ─────────────────────────────────────────────────────────────
+function parseColor(c) {
+  if (!c || c === 'none') return null;
+  if (c.startsWith('#')) return c;
+  const m = c.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+  if (m) return '#' + [m[1],m[2],m[3]].map(x => (+x).toString(16).padStart(2,'0')).join('');
+  return c;
+}
+
+// ─── COPY / DOWNLOAD ─────────────────────────────────────────────────────────
+btnCopy.addEventListener('click', () => {
+  navigator.clipboard.writeText(jsonOut.value).then(() => {
+    const orig = btnCopy.textContent;
+    btnCopy.textContent = '✅ Copiado!';
+    setTimeout(() => btnCopy.textContent = orig, 2000);
+  });
+});
+
+btnDownload.addEventListener('click', () => {
+  if (!jsonOut.value) return;
+  const name = document.getElementById('stickerName').value.trim() || 'vector';
+  const blob = new Blob([jsonOut.value], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name + '.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
+// ─── PUBLISH ─────────────────────────────────────────────────────────────────
+btnPublish.addEventListener('click', () => publishJson());
+
+async function publishJson() {
+  if (!lastJson) return;
+
+  const baseUrl = document.getElementById('systemUrl').value.trim().replace(/\/$/, '');
+  const key     = publishKeyEl.value.trim();
+  const name    = document.getElementById('stickerName').value.trim() || 'mi-vector';
+  const folder  = document.getElementById('folderName').value.trim() || '';
+
+  setPublishStatus('info', '🚀 Publicando en Agrupados...');
+  btnPublish.disabled = true;
+  resultLinks.classList.remove('visible');
+
+  const payload = { ...lastJson, name, folder };
+
+  const headers = { 'Content-Type': 'application/json' };
+  if (key) headers['x-publish-key'] = key;
+
+  try {
+    // Try /api/publish-grouped first (context menu action endpoint)
+    // Fallback to /api/publish (standard vector endpoint)
+    let res = await fetch(baseUrl + '/api/publish-grouped', {
+      method: 'POST', headers, body: JSON.stringify(payload)
+    });
+
+    if (!res.ok && res.status === 404) {
+      // Fallback to /api/publish
+      res = await fetch(baseUrl + '/api/publish', {
+        method: 'POST', headers, body: JSON.stringify(payload)
+      });
+    }
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || data.message || `HTTP ${res.status}`);
+    }
+
+    // Show result links
+    resultLinks.innerHTML = '<p>✅ PUBLICADO EXITOSAMENTE</p>';
+    if (data.previewUrl || data.url) {
+      resultLinks.innerHTML += `<a href="${data.previewUrl || data.url}" target="_blank">🔗 Preview: ${data.previewUrl || data.url}</a>`;
+    }
+    if (data.jsonUrl) {
+      resultLinks.innerHTML += `<a href="${data.jsonUrl}" target="_blank">📄 JSON: ${data.jsonUrl}</a>`;
+    }
+    if (data.id || data.path) {
+      resultLinks.innerHTML += `<span style="color:var(--muted);font-size:10px;font-family:var(--mono)">ID: ${data.id || data.path}</span>`;
+    }
+    resultLinks.classList.add('visible');
+
+    setPublishStatus('ok', '✅ Publicado como Agrupado — ya puedes insertar desde la Biblioteca');
+
+  } catch(e) {
+    setPublishStatus('error', '❌ ' + e.message);
+  }
+
+  btnPublish.disabled = false;
+}
+
+// ─── STATUS HELPERS ──────────────────────────────────────────────────────────
+function setStatus(type, msg) {
+  statusEl.className = 'status ' + (type === 'ok' ? 'ok' : type === 'error' ? 'err' : 'inf');
+  statusEl.innerHTML = (type === 'info' ? '<div class="spinner"></div>' : '') + msg;
+}
+function setPublishStatus(type, msg) {
+  publishStatusEl.className = 'status ' + (type === 'ok' ? 'ok' : type === 'error' ? 'err' : 'inf');
+  publishStatusEl.innerHTML = (type === 'info' ? '<div class="spinner"></div>' : '') + msg;
+}
+
+// ─── LOAD SAVED KEY ──────────────────────────────────────────────────────────
+try {
+  const saved = localStorage.getItem('fdc_publish_key');
+  if (saved) publishKeyEl.value = saved;
+  publishKeyEl.addEventListener('change', () => {
+    localStorage.setItem('fdc_publish_key', publishKeyEl.value);
+  });
+} catch(e) {}
+</script>
+</body>
+</html>

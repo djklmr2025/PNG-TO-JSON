@@ -1,0 +1,540 @@
+{
+  "name": "metro-cdmx-linea",
+  "camera": {
+    "x": 0,
+    "y": 0,
+    "zoom": 1
+  },
+  "elements": [
+    {
+      "type": "polygon",
+      "id": "e0",
+      "name": "metro_polygon_0",
+      "x": 260,
+      "y": 80,
+      "points": [
+        [
+          -250,
+          -62
+        ],
+        [
+          250,
+          -62
+        ],
+        [
+          258,
+          62
+        ],
+        [
+          -258,
+          62
+        ]
+      ],
+      "fillColor": "#E05C18",
+      "strokeColor": "transparent",
+      "lineWidth": 1
+    },
+    {
+      "type": "rectangle",
+      "id": "e1",
+      "name": "metro_rectangle_1",
+      "x": 260,
+      "y": 116,
+      "width": 514,
+      "height": 14,
+      "fillColor": "#8B3A12",
+      "strokeColor": "transparent",
+      "lineWidth": 1
+    },
+    {
+      "type": "polygon",
+      "id": "e2",
+      "name": "metro_polygon_2",
+      "x": 260,
+      "y": 80,
+      "points": [
+        [
+          -228,
+          -62
+        ],
+        [
+          228,
+          -62
+        ],
+        [
+          215,
+          -82
+        ],
+        [
+          -215,
+          -82
+        ]
+      ],
+      "fillColor": "#555E62",
+      "strokeColor": "transparent",
+      "lineWidth": 1
+    },
+    {
+      "type": "polygon",
+      "id": "e3",
+      "name": "metro_polygon_3",
+      "x": 260,
+      "y": 80,
+      "points": [
+        [
+          -258,
+          62
+        ],
+        [
+          -250,
+          -62
+        ],
+        [
+          -280,
+          -55
+        ],
+        [
+          -290,
+          55
+        ]
+      ],
+      "fillColor": "#C04E10",
+      "strokeColor": "transparent",
+      "lineWidth": 1
+    },
+    {
+      "type": "polygon",
+      "id": "e4",
+      "name": "metro_polygon_4",
+      "x": 260,
+      "y": 80,
+      "points": [
+        [
+          258,
+          62
+        ],
+        [
+          250,
+          -62
+        ],
+        [
+          280,
+          -55
+        ],
+        [
+          290,
+          55
+        ]
+      ],
+      "fillColor": "#C04E10",
+      "strokeColor": "transparent",
+      "lineWidth": 1
+    },
+    {
+      "type": "rectangle",
+      "id": "e5",
+      "name": "metro_rectangle_5",
+      "x": 260,
+      "y": 154,
+      "width": 516,
+      "height": 16,
+      "fillColor": "#3A2800",
+      "strokeColor": "transparent",
+      "lineWidth": 1
+    },
+    {
+      "type": "rectangle",
+      "id": "e6",
+      "name": "metro_rectangle_6",
+      "x": 56.0,
+      "y": 70,
+      "width": 60,
+      "height": 30,
+      "fillColor": "#B0C8D0",
+      "strokeColor": "#88A8B5",
+      "lineWidth": 1.5
+    },
+    {
+      "type": "rectangle",
+      "id": "e7",
+      "name": "metro_rectangle_7",
+      "x": 124.0,
+      "y": 70,
+      "width": 60,
+      "height": 30,
+      "fillColor": "#B0C8D0",
+      "strokeColor": "#88A8B5",
+      "lineWidth": 1.5
+    },
+    {
+      "type": "rectangle",
+      "id": "e8",
+      "name": "metro_rectangle_8",
+      "x": 171.0,
+      "y": 70,
+      "width": 60,
+      "height": 30,
+      "fillColor": "#B0C8D0",
+      "strokeColor": "#88A8B5",
+      "lineWidth": 1.5
+    },
+    {
+      "type": "rectangle",
+      "id": "e9",
+      "name": "metro_rectangle_9",
+      "x": 239.0,
+      "y": 70,
+      "width": 60,
+      "height": 30,
+      "fillColor": "#B0C8D0",
+      "strokeColor": "#88A8B5",
+      "lineWidth": 1.5
+    },
+    {
+      "type": "rectangle",
+      "id": "e10",
+      "name": "metro_rectangle_10",
+      "x": 281.0,
+      "y": 70,
+      "width": 60,
+      "height": 30,
+      "fillColor": "#B0C8D0",
+      "strokeColor": "#88A8B5",
+      "lineWidth": 1.5
+    },
+    {
+      "type": "rectangle",
+      "id": "e11",
+      "name": "metro_rectangle_11",
+      "x": 349.0,
+      "y": 70,
+      "width": 60,
+      "height": 30,
+      "fillColor": "#B0C8D0",
+      "strokeColor": "#88A8B5",
+      "lineWidth": 1.5
+    },
+    {
+      "type": "rectangle",
+      "id": "e12",
+      "name": "metro_rectangle_12",
+      "x": 396.0,
+      "y": 70,
+      "width": 60,
+      "height": 30,
+      "fillColor": "#B0C8D0",
+      "strokeColor": "#88A8B5",
+      "lineWidth": 1.5
+    },
+    {
+      "type": "rectangle",
+      "id": "e13",
+      "name": "metro_rectangle_13",
+      "x": 464.0,
+      "y": 70,
+      "width": 60,
+      "height": 30,
+      "fillColor": "#B0C8D0",
+      "strokeColor": "#88A8B5",
+      "lineWidth": 1.5
+    },
+    {
+      "type": "rectangle",
+      "id": "e14",
+      "name": "metro_rectangle_14",
+      "x": 134,
+      "y": 104,
+      "width": 34,
+      "height": 58,
+      "fillColor": "#C04E10",
+      "strokeColor": "#3A2800",
+      "lineWidth": 1.5
+    },
+    {
+      "type": "rectangle",
+      "id": "e15",
+      "name": "metro_rectangle_15",
+      "x": 170,
+      "y": 104,
+      "width": 34,
+      "height": 58,
+      "fillColor": "#C04E10",
+      "strokeColor": "#3A2800",
+      "lineWidth": 1.5
+    },
+    {
+      "type": "line",
+      "id": "e16",
+      "name": "metro_line_16",
+      "x1": 152,
+      "y1": 76,
+      "x2": 152,
+      "y2": 134,
+      "strokeColor": "#3A2800",
+      "lineWidth": 2
+    },
+    {
+      "type": "rectangle",
+      "id": "e17",
+      "name": "metro_rectangle_17",
+      "x": 350,
+      "y": 104,
+      "width": 34,
+      "height": 58,
+      "fillColor": "#C04E10",
+      "strokeColor": "#3A2800",
+      "lineWidth": 1.5
+    },
+    {
+      "type": "rectangle",
+      "id": "e18",
+      "name": "metro_rectangle_18",
+      "x": 386,
+      "y": 104,
+      "width": 34,
+      "height": 58,
+      "fillColor": "#C04E10",
+      "strokeColor": "#3A2800",
+      "lineWidth": 1.5
+    },
+    {
+      "type": "line",
+      "id": "e19",
+      "name": "metro_line_19",
+      "x1": 368,
+      "y1": 76,
+      "x2": 368,
+      "y2": 134,
+      "strokeColor": "#3A2800",
+      "lineWidth": 2
+    },
+    {
+      "type": "rectangle",
+      "id": "e20",
+      "name": "metro_rectangle_20",
+      "x": -12,
+      "y": 68,
+      "width": 20,
+      "height": 22,
+      "fillColor": "#B0C8D0",
+      "strokeColor": "#88A8B5",
+      "lineWidth": 1.5
+    },
+    {
+      "type": "rectangle",
+      "id": "e21",
+      "name": "metro_rectangle_21",
+      "x": 532,
+      "y": 68,
+      "width": 20,
+      "height": 22,
+      "fillColor": "#B0C8D0",
+      "strokeColor": "#88A8B5",
+      "lineWidth": 1.5
+    },
+    {
+      "type": "rectangle",
+      "id": "e22",
+      "name": "metro_rectangle_22",
+      "x": 95,
+      "y": 166,
+      "width": 96,
+      "height": 22,
+      "fillColor": "#2A2A2A",
+      "strokeColor": "transparent",
+      "lineWidth": 1
+    },
+    {
+      "type": "circle",
+      "id": "e23",
+      "name": "metro_circle_23",
+      "x": 65,
+      "y": 174,
+      "width": 22,
+      "height": 22,
+      "fillColor": "#1A1A1A",
+      "strokeColor": "#555",
+      "lineWidth": 2
+    },
+    {
+      "type": "circle",
+      "id": "e24",
+      "name": "metro_circle_24",
+      "x": 65,
+      "y": 174,
+      "width": 10,
+      "height": 10,
+      "fillColor": "#333",
+      "strokeColor": "transparent",
+      "lineWidth": 1
+    },
+    {
+      "type": "circle",
+      "id": "e25",
+      "name": "metro_circle_25",
+      "x": 95,
+      "y": 174,
+      "width": 22,
+      "height": 22,
+      "fillColor": "#1A1A1A",
+      "strokeColor": "#555",
+      "lineWidth": 2
+    },
+    {
+      "type": "circle",
+      "id": "e26",
+      "name": "metro_circle_26",
+      "x": 95,
+      "y": 174,
+      "width": 10,
+      "height": 10,
+      "fillColor": "#333",
+      "strokeColor": "transparent",
+      "lineWidth": 1
+    },
+    {
+      "type": "circle",
+      "id": "e27",
+      "name": "metro_circle_27",
+      "x": 125,
+      "y": 174,
+      "width": 22,
+      "height": 22,
+      "fillColor": "#1A1A1A",
+      "strokeColor": "#555",
+      "lineWidth": 2
+    },
+    {
+      "type": "circle",
+      "id": "e28",
+      "name": "metro_circle_28",
+      "x": 125,
+      "y": 174,
+      "width": 10,
+      "height": 10,
+      "fillColor": "#333",
+      "strokeColor": "transparent",
+      "lineWidth": 1
+    },
+    {
+      "type": "rectangle",
+      "id": "e29",
+      "name": "metro_rectangle_29",
+      "x": 425,
+      "y": 166,
+      "width": 96,
+      "height": 22,
+      "fillColor": "#2A2A2A",
+      "strokeColor": "transparent",
+      "lineWidth": 1
+    },
+    {
+      "type": "circle",
+      "id": "e30",
+      "name": "metro_circle_30",
+      "x": 395,
+      "y": 174,
+      "width": 22,
+      "height": 22,
+      "fillColor": "#1A1A1A",
+      "strokeColor": "#555",
+      "lineWidth": 2
+    },
+    {
+      "type": "circle",
+      "id": "e31",
+      "name": "metro_circle_31",
+      "x": 395,
+      "y": 174,
+      "width": 10,
+      "height": 10,
+      "fillColor": "#333",
+      "strokeColor": "transparent",
+      "lineWidth": 1
+    },
+    {
+      "type": "circle",
+      "id": "e32",
+      "name": "metro_circle_32",
+      "x": 425,
+      "y": 174,
+      "width": 22,
+      "height": 22,
+      "fillColor": "#1A1A1A",
+      "strokeColor": "#555",
+      "lineWidth": 2
+    },
+    {
+      "type": "circle",
+      "id": "e33",
+      "name": "metro_circle_33",
+      "x": 425,
+      "y": 174,
+      "width": 10,
+      "height": 10,
+      "fillColor": "#333",
+      "strokeColor": "transparent",
+      "lineWidth": 1
+    },
+    {
+      "type": "circle",
+      "id": "e34",
+      "name": "metro_circle_34",
+      "x": 455,
+      "y": 174,
+      "width": 22,
+      "height": 22,
+      "fillColor": "#1A1A1A",
+      "strokeColor": "#555",
+      "lineWidth": 2
+    },
+    {
+      "type": "circle",
+      "id": "e35",
+      "name": "metro_circle_35",
+      "x": 455,
+      "y": 174,
+      "width": 10,
+      "height": 10,
+      "fillColor": "#333",
+      "strokeColor": "transparent",
+      "lineWidth": 1
+    },
+    {
+      "type": "rectangle",
+      "id": "e36",
+      "name": "metro_rectangle_36",
+      "x": 260,
+      "y": 170,
+      "width": 230,
+      "height": 6,
+      "fillColor": "#333",
+      "strokeColor": "transparent",
+      "lineWidth": 1
+    },
+    {
+      "type": "rectangle",
+      "id": "e37",
+      "name": "metro_rectangle_37",
+      "x": 260,
+      "y": 27,
+      "width": 490,
+      "height": 5,
+      "fillColor": "#1A4A7A",
+      "strokeColor": "transparent",
+      "lineWidth": 1
+    },
+    {
+      "type": "rectangle",
+      "id": "e38",
+      "name": "metro_rectangle_38",
+      "x": 535,
+      "y": 100,
+      "width": 18,
+      "height": 30,
+      "fillColor": "#1A1A1A",
+      "strokeColor": "#444",
+      "lineWidth": 1
+    }
+  ]
+}
